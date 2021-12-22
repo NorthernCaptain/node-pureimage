@@ -102,8 +102,29 @@ export class Context {
          * @type {string}
          */
         this._strokeStyle_text = '';
+
+        /**
+         * @type {string}
+         * @private
+         */
+        this._globalCompositeOperation = 'source-over';
     }
 
+    /**
+     * Global composite operation. Can be one of the following: source-over or copy
+     * @return {string}
+     */
+    get globalCompositeOperation () {
+        return this._globalCompositeOperation;
+    }
+
+    /**
+     * Set global composite operation. Can be one of the following: source-over or copy
+     * @param value
+     */
+    set globalCompositeOperation (value) {
+        this._globalCompositeOperation = value;
+    }
     /**
      * The color or style to use inside shapes. The default is #000 (black).
      *
@@ -373,9 +394,11 @@ export class Context {
         }
 
         const new_pixel = this.calculateRGBA(x, y)
-        const old_pixel = this.bitmap.getPixelRGBA(x, y)
-        const final_pixel = this.composite(x, y, old_pixel, new_pixel)
-
+        let final_pixel = new_pixel
+        if(this._globalCompositeOperation === 'source-over') {
+            const old_pixel = this.bitmap.getPixelRGBA(x, y)
+            final_pixel = this.composite(x, y, old_pixel, new_pixel)
+        }
         this.bitmap.setPixelRGBA(x,y,final_pixel);
     }
 
@@ -395,8 +418,11 @@ export class Context {
         }
 
         const new_pixel = this.calculateRGBA_stroke(x, y)
-        const old_pixel = this.bitmap.getPixelRGBA(x, y)
-        const final_pixel = this.composite(x, y, old_pixel, new_pixel)
+        let final_pixel = new_pixel
+        if(this._globalCompositeOperation === 'source-over') {
+            const old_pixel = this.bitmap.getPixelRGBA(x, y)
+            final_pixel = this.composite(x, y, old_pixel, new_pixel)
+        }
 
         this.bitmap.setPixelRGBA(x,y,final_pixel);
     }
@@ -419,11 +445,13 @@ export class Context {
             return
         }
 
-        const new_pixel = col
-        const old_pixel = this.bitmap.getPixelRGBA(x, y)
-        const final_pixel = this.composite(x, y, old_pixel, new_pixel)
-
-        this.bitmap.setPixelRGBA(x,y,final_pixel);
+        let final_pixel = col
+        if(this._globalCompositeOperation === 'source-over') {
+            const new_pixel = col
+            const old_pixel = this.bitmap.getPixelRGBA(x, y)
+            final_pixel = this.composite(x, y, old_pixel, new_pixel)
+        }
+        this.bitmap.setPixelRGBA(x, y, final_pixel);
     }
 
     /**
